@@ -1,12 +1,14 @@
 import urllib.request
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.options import Options
+import socket
 import os
 import time
 import getpass
 from tqdm import tqdm
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 
+socket.setdefaulttimeout(10)
 email = input('Enter Email:')
 password = getpass.getpass(prompt='Enter Password:')
 options = Options()
@@ -54,13 +56,19 @@ def downloadmp4(url, filename, path):
     fullname = path + filename + ".mp4"
     if os.path.isfile(fullname):
         print(filename + " already exists, skipping...")
-        return()
+        return True
     else:
         print("Downloading: " + filename)
         with DownloadProgressBar(unit='B', unit_scale=True,
                                  miniters=1, desc=url.split('/')[-1]) as t:
-            urllib.request.urlretrieve(
-                url, filename=fullname, reporthook=t.update_to)
+            try:
+                urllib.request.urlretrieve(
+                    url, filename=fullname, reporthook=t.update_to)
+                return True
+            except:
+                print("Request timed out!")
+                os.remove(fullname)
+                return False
 
 
 def doLogin(email, password):
@@ -98,14 +106,14 @@ def grabLesson(lessonlink, path):
     time.sleep(10)
     try:
         videolink = browser.find_element_by_tag_name(
-        "video").get_attribute("currentSrc")
+            "video").get_attribute("currentSrc")
         videotitle = browser.find_element_by_tag_name(
-        "h1").get_attribute("innerText").replace(":", "").replace(" ", "_").replace("/", "")
+            "h1").get_attribute("innerText").replace(":", "").replace(" ", "_").replace("/", "")
     except:
         pass
-        print("Failed!")
-        return
-    downloadmp4(videolink, videotitle, path)
+        print("Page loading failed! Retrying...")
+        return False
+    return downloadmp4(videolink, videotitle, path)
 
 
 def makeDir(dirr):
@@ -120,8 +128,9 @@ def main():
     for i in range(len(lines)):
         lessonlinks = collectClasses(lines[i])
         makeDir(paths[i])
-        for link in lessonlinks:
-            grabLesson(link, paths[i])
+        for j in range(len(lessonlinks)):
+            if not grabLesson(lessonlinks[j], paths[i]):
+                j -= 1
     browser.quit()
     print("++ All downloads completed successfully, have fun! ++")
     quit(0)
