@@ -3,6 +3,7 @@ import socket
 import os
 import time
 import getpass
+import _thread
 from tqdm import tqdm
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -107,7 +108,7 @@ def collectClasses(courselink):
 
 def grabLesson(lessonlink, path):
     browser.get(lessonlink)
-    time.sleep(5)
+    # time.sleep(5)
     try:
         videolink = browser.find_element_by_tag_name(
             "video").get_attribute("currentSrc")
@@ -117,7 +118,7 @@ def grabLesson(lessonlink, path):
         pass
         print("Page loading failed! Retrying...")
         return False
-    return downloadmp4(videolink, videotitle, path)
+    return [videolink, videotitle]
 
 
 def makeDir(dirr):
@@ -132,9 +133,16 @@ def main():
     for i in range(len(lines)):
         lessonlinks = collectClasses(lines[i])
         makeDir(paths[i])
+        dlcontent = []
         for link in lessonlinks:
-            if grabLesson(link, paths[i]) == False:
-                lessonlinks.pos -= 1
+            dlcontent.append(grabLesson(link, paths[i]))
+        for con in dlcontent:
+            try:
+                _thread.start_new_thread(
+                    downloadmp4, (con[0], con[1], paths[i]))
+                time.sleep(1)
+            except:
+                print("Could not start thread!")
     browser.quit()
     print("++ All downloads completed successfully, have fun! ++")
     quit(0)
