@@ -134,15 +134,19 @@ def main():
         lessonlinks = collectClasses(lines[i])
         makeDir(paths[i])
         dlcontent = []
-        for link in lessonlinks:
-            dlcontent.append(grabLesson(link, paths[i]))
-        for con in dlcontent:
-            try:
-                _thread.start_new_thread(
-                    downloadmp4, (con[0], con[1], paths[i]))
-                time.sleep(1)
-            except:
-                print("Could not start thread!")
+        counter = 0
+        while counter < len(lessonlinks):
+            if not grabLesson(lessonlinks[counter], paths[i]):
+                counter -= 1
+            else:
+                dlcontent.append(grabLesson(link, paths[i]))
+                counter += 1
+        counter = 0
+        while counter < len(dlcontent):
+            if not downloadmp4(dlcontent[counter][0], dlcontent[counter][1], paths[i]):
+                counter -= 1
+            else:
+                counter += 1
     browser.quit()
     print("++ All downloads completed successfully, have fun! ++")
     quit(0)
