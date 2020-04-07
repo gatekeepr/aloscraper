@@ -1,11 +1,17 @@
 import urllib.request
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 import os
 import time
 import getpass
 
-browser = webdriver.Chrome()
+email = input('Enter Email:')
+password = getpass.getpass(prompt='Enter Password:')
+options = Options()
+options.add_argument('--headless')
+options.add_argument('--disable-gpu')
+browser = webdriver.Chrome(options=options)
 paths = []
 lines = []
 LINKFILE = ""
@@ -63,11 +69,16 @@ def doLogin(email, password):
 
 def collectClasses(courselink):
     print(f"== Grabbing links for {courselink} ==")
+    time.sleep(5)
     browser.get(courselink)
     time.sleep(5)
     workoutLinks = browser.find_elements_by_xpath(
         "//div[contains(@class,'workout-title')]/a")
     reallinks = [link.get_attribute("href") for link in workoutLinks]
+    if(len(reallinks) is 0):
+        print("Login failed, make sure you got a valid trial account!")
+        browser.quit()
+        quit(1)
     return reallinks
 
 
@@ -89,8 +100,6 @@ def makeDir(dirr):
 
 
 def main():
-    email = input('Enter Email:')
-    password = getpass.getpass(prompt='Enter Password:')
     doLogin(email, password)
     for i in range(len(lines)):
         lessonlinks = collectClasses(lines[i])
@@ -99,6 +108,7 @@ def main():
             grabLesson(link, paths[i])
     browser.quit()
     print("++ All downloads completed successfully, have fun! ++")
+    quit(0)
 
 
 main()
