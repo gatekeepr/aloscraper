@@ -67,7 +67,11 @@ def downloadmp4(url, filename, path):
                 return True
             except:
                 print("Request timed out!")
-                os.remove(fullname)
+                try:
+                    os.remove(fullname)
+                except:
+                    print("No file created!")
+                    return False
                 return False
 
 
@@ -103,7 +107,7 @@ def collectClasses(courselink):
 
 def grabLesson(lessonlink, path):
     browser.get(lessonlink)
-    time.sleep(10)
+    time.sleep(5)
     try:
         videolink = browser.find_element_by_tag_name(
             "video").get_attribute("currentSrc")
@@ -128,9 +132,9 @@ def main():
     for i in range(len(lines)):
         lessonlinks = collectClasses(lines[i])
         makeDir(paths[i])
-        for j in range(len(lessonlinks)):
-            if not grabLesson(lessonlinks[j], paths[i]):
-                j -= 1
+        for link in lessonlinks:
+            if grabLesson(link, paths[i]) == False:
+                lessonlinks.pos -= 1
     browser.quit()
     print("++ All downloads completed successfully, have fun! ++")
     quit(0)
