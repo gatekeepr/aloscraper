@@ -91,7 +91,6 @@ def main():
     email = input('Enter Email:')
     password = getpass.getpass(prompt='Enter Password:')
     doLogin(email, password)
-    quit()
     for i in range(len(lines)):
         lessonlinks = collectClasses(lines[i])
         makeDir(paths[i])
