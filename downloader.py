@@ -108,14 +108,13 @@ def collectClasses(courselink):
 
 def grabLesson(lessonlink, path):
     browser.get(lessonlink)
-    # time.sleep(5)
+    time.sleep(2)
     try:
         videolink = browser.find_element_by_tag_name(
             "video").get_attribute("currentSrc")
         videotitle = browser.find_element_by_tag_name(
             "h1").get_attribute("innerText").replace(":", "").replace(" ", "_").replace("/", "")
     except:
-        pass
         print("Page loading failed! Retrying...")
         return False
     return [videolink, videotitle]
@@ -136,13 +135,16 @@ def main():
         dlcontent = []
         counter = 0
         while counter < len(lessonlinks):
-            if not grabLesson(lessonlinks[counter], paths[i]):
+            print(f"Grabbed {counter}/{len(lessonlinks)-1} links")
+            result = grabLesson(lessonlinks[counter], paths[i])
+            if not result:
                 counter -= 1
             else:
-                dlcontent.append(grabLesson(link, paths[i]))
+                dlcontent.append(result)
                 counter += 1
         counter = 0
         while counter < len(dlcontent):
+            print(f"{counter}/{len(dlcontent)-1} files downloaded")
             if not downloadmp4(dlcontent[counter][0], dlcontent[counter][1], paths[i]):
                 counter -= 1
             else:
