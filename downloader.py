@@ -64,6 +64,7 @@ def doLogin(email, password):
 def collectClasses(courselink):
     print(f"== Grabbing links for {courselink} ==")
     browser.get(courselink)
+    time.sleep(5)
     workoutLinks = browser.find_elements_by_xpath(
         "//div[contains(@class,'workout-title')]/a")
     reallinks = [link.get_attribute("href") for link in workoutLinks]
