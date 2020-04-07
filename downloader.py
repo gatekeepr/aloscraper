@@ -5,6 +5,7 @@ from selenium.webdriver.chrome.options import Options
 import os
 import time
 import getpass
+from tqdm import tqdm
 
 email = input('Enter Email:')
 password = getpass.getpass(prompt='Enter Password:')
@@ -41,6 +42,13 @@ else:
     print("OS not supported, please open an issue on Github.")
 
 
+class DownloadProgressBar(tqdm):
+    def update_to(self, b=1, bsize=1, tsize=None):
+        if tsize is not None:
+            self.total = tsize
+        self.update(b * bsize - self.n)
+
+
 def downloadmp4(url, filename, path):
     fullname = path + filename + ".mp4"
     if os.path.isfile(fullname):
@@ -48,8 +56,11 @@ def downloadmp4(url, filename, path):
         return()
     else:
         print("Downloading: " + filename)
-        urllib.request.urlretrieve(
-            url, fullname)
+        #urllib.request.urlretrieve(url, fullname)
+        with DownloadProgressBar(unit='B', unit_scale=True,
+                                 miniters=1, desc=url.split('/')[-1]) as t:
+            urllib.request.urlretrieve(
+                url, filename=fullname, reporthook=t.update_to)
 
 
 def doLogin(email, password):

@@ -3,7 +3,7 @@ Download courses from alomoves.com automatically.
 
 ## Installation
 
-1. ```pip install selenium```
+1. ```pip3 install selenium tqdm```
 2. Download Chrome Webdriver according to your Version (probably 80) [HERE](https://chromedriver.chromium.org/downloads) and place into your working folder next to the .py (or add it to your PATH)
 3. Make sure you have a valid alomoves account on hand (2 week test accounts are fine).
 4. Place the links of courses you want to download in **downloadlinks.txt**, one per line.
