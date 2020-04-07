@@ -12,6 +12,7 @@ password = getpass.getpass(prompt='Enter Password:')
 options = Options()
 options.add_argument('--headless')
 options.add_argument('--disable-gpu')
+options.add_argument('--log-level=3')
 browser = webdriver.Chrome(options=options)
 paths = []
 lines = []
@@ -56,7 +57,6 @@ def downloadmp4(url, filename, path):
         return()
     else:
         print("Downloading: " + filename)
-        #urllib.request.urlretrieve(url, fullname)
         with DownloadProgressBar(unit='B', unit_scale=True,
                                  miniters=1, desc=url.split('/')[-1]) as t:
             urllib.request.urlretrieve(
@@ -86,7 +86,7 @@ def collectClasses(courselink):
     workoutLinks = browser.find_elements_by_xpath(
         "//div[contains(@class,'workout-title')]/a")
     reallinks = [link.get_attribute("href") for link in workoutLinks]
-    if(len(reallinks) is 0):
+    if(len(reallinks) == 0):
         print("Login failed, make sure you got a valid trial account!")
         browser.quit()
         quit(1)
@@ -95,11 +95,16 @@ def collectClasses(courselink):
 
 def grabLesson(lessonlink, path):
     browser.get(lessonlink)
-    time.sleep(5)
-    videolink = browser.find_element_by_tag_name(
+    time.sleep(10)
+    try:
+        videolink = browser.find_element_by_tag_name(
         "video").get_attribute("currentSrc")
-    videotitle = browser.find_element_by_tag_name(
+        videotitle = browser.find_element_by_tag_name(
         "h1").get_attribute("innerText").replace(":", "").replace(" ", "_").replace("/", "")
+    except:
+        pass
+        print("Failed!")
+        return
     downloadmp4(videolink, videotitle, path)
 
 
