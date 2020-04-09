@@ -134,19 +134,32 @@ def main():
         makeDir(paths[i])
         dlcontent = []
         counter = 0
+        failures = 0
+        skipped = 0
         while counter < len(lessonlinks):
-            print(f"Grabbed {counter}/{len(lessonlinks)-1} links")
+            print(
+                f"Grabbed {counter}/{len(lessonlinks)-1} links ({skipped} skipped)")
             result = grabLesson(lessonlinks[counter], paths[i])
             if not result:
-                counter -= 1
+                failures += 1
+                if failures == 3:
+                    print("Something wrong with the link, skipping...")
+                    counter += 1
+                    skipped += 1
+                    failures = 0
             else:
                 dlcontent.append(result)
                 counter += 1
         counter = 0
+        failures = 0
         while counter < len(dlcontent):
             print(f"{counter}/{len(dlcontent)-1} files downloaded")
             if not downloadmp4(dlcontent[counter][0], dlcontent[counter][1], paths[i]):
-                counter -= 1
+                failures += 1
+                if failures == 3:
+                    print("Cant grab link, skipping...")
+                    counter += 1
+                    failures = 0
             else:
                 counter += 1
     browser.quit()
