@@ -53,8 +53,9 @@ class DownloadProgressBar(tqdm):
         self.update(b * bsize - self.n)
 
 
-def downloadmp4(url, filename, path):
-    fullname = path + filename + ".mp4"
+def downloadmp4(url, filename, path, counterepisode, counterseason):
+    fullname = path + f"s{str(counterseason+1).zfill(2)}" + f"e{str(counterepisode+1).zfill(2)}_" + filename + ".mp4"
+    fullname = fullname.lower()
     if os.path.isfile(fullname):
         print(filename + " already exists, skipping...")
         return True
@@ -142,8 +143,10 @@ def main():
             result = grabLesson(lessonlinks[counter], paths[i])
             if not result:
                 failures += 1
+                time.sleep(15)
                 if failures == 3:
                     print("Something wrong with the link, skipping...")
+                    dlcontent.append(["Null","Null"])
                     counter += 1
                     skipped += 1
                     failures = 0
@@ -154,8 +157,9 @@ def main():
         failures = 0
         while counter < len(dlcontent):
             print(f"{counter}/{len(dlcontent)-1} files downloaded")
-            if not downloadmp4(dlcontent[counter][0], dlcontent[counter][1], paths[i]):
+            if not downloadmp4(dlcontent[counter][0], dlcontent[counter][1], paths[i], counter, i):
                 failures += 1
+                time.sleep(15)
                 if failures == 3:
                     print("Cant grab link, skipping...")
                     counter += 1
