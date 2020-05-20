@@ -1,2 +1,6 @@
 content/*
 *.txt
+debug.log
+chromedriver.exe
+downloadlinks.txt
+.vscode/

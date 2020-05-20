@@ -9,6 +9,10 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 
+REDOWNLOAD = False
+# BASEPATH = os.getcwd() + "\\content"
+BASEPATH = r"M:\Serien\Aloyoga"
+
 socket.setdefaulttimeout(10)
 email = input('Enter Email:')
 password = getpass.getpass(prompt='Enter Password:')
@@ -23,11 +27,11 @@ LINKFILE = ""
 BASEPATH = ""
 SYSTEM = os.name
 
+
 if SYSTEM == "nt":
     LINKFILE = os.getcwd() + "\\downloadlinks.txt"
     with open(LINKFILE) as f:
         lines = [line.rstrip() for line in f]
-    BASEPATH = os.getcwd() + "\\content"
     for line in lines:
         line = line.split("series")[1].split("workouts")[0]
         paths.append(BASEPATH + "\\" + line[1:-1]
@@ -38,7 +42,6 @@ elif SYSTEM == "posix":
     LINKFILE = os.getcwd() + "/downloadlinks.txt"
     with open(LINKFILE) as f:
         lines = [line.rstrip() for line in f]
-    BASEPATH = os.getcwd() + "/content"
     for line in lines:
         line = line.split("series")[1].split("workouts")[0]
         paths.append(BASEPATH + line)
@@ -131,43 +134,53 @@ def makeDir(dirr):
 def main():
     doLogin(email, password)
     for i in range(len(lines)):
-        lessonlinks = collectClasses(lines[i])
-        makeDir(paths[i])
-        dlcontent = []
+        GOTONEXT = False
         counter = 0
         failures = 0
         skipped = 0
-        while counter < len(lessonlinks):
-            print(
-                f"Grabbed {counter}/{len(lessonlinks)-1} links ({skipped} skipped)")
-            result = grabLesson(lessonlinks[counter], paths[i])
-            if not result:
-                failures += 1
-                time.sleep(15)
-                if failures == 3:
-                    print("Something wrong with the link, skipping...")
-                    dlcontent.append(["Null","Null"])
-                    counter += 1
-                    skipped += 1
-                    failures = 0
+        if(os.path.exists(paths[i])):
+            if not REDOWNLOAD:
+                print(f"Course {paths[i]} already exists, skipping ...")
+                GOTONEXT = True
             else:
-                dlcontent.append(result)
-                counter += 1
-        counter = 0
-        failures = 0
-        while counter < len(dlcontent):
-            print(f"{counter}/{len(dlcontent)-1} files downloaded")
-            if not downloadmp4(dlcontent[counter][0], dlcontent[counter][1], paths[i], counter, i):
-                failures += 1
-                time.sleep(15)
-                if failures == 3:
-                    print("Cant grab link, skipping...")
+                lessonlinks = collectClasses(lines[i])
+                makeDir(paths[i])
+        else:
+                lessonlinks = collectClasses(lines[i])
+                makeDir(paths[i])
+        if not GOTONEXT:
+            dlcontent = []
+            while counter < len(lessonlinks):
+                print(
+                    f"Grabbed {counter}/{len(lessonlinks)-1} links ({skipped} skipped)")
+                result = grabLesson(lessonlinks[counter], paths[i])
+                if not result:
+                    failures += 1
+                    time.sleep(15)
+                    if failures == 3:
+                        print("Something wrong with the link, skipping...")
+                        dlcontent.append(["Null","Null"])
+                        counter += 1
+                        skipped += 1
+                        failures = 0
+                else:
+                    dlcontent.append(result)
                     counter += 1
-                    failures = 0
-            else:
-                counter += 1
+            counter = 0
+            failures = 0
+            while counter < len(dlcontent):
+                print(f"{counter}/{len(dlcontent)-1} files downloaded")
+                if not downloadmp4(dlcontent[counter][0], dlcontent[counter][1], paths[i], counter, i):
+                    failures += 1
+                    time.sleep(15)
+                    if failures == 3:
+                        print("Cant grab link, skipping...")
+                        counter += 1
+                        failures = 0
+                else:
+                    counter += 1
     browser.quit()
-    print("++ All downloads completed successfully, have fun! ++")
+    print("++ All downloads completed, have fun! ++")
     quit(0)
 
 
